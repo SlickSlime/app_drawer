@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'app_drawer_controller.dart';
 
 /// Wrap a page with [AppDrawerWrapper] and ChangeNotifierProvider of
-/// [AppDrawerWrapperController] to add "animated" app drawer to that page.
+/// [AppDrawerController] to add "animated" app drawer to that page.
 ///
-/// Use [AppDrawerWrapperController.animateForward] and [AppDrawerWrapperController.animateReverse]
+/// Use [AppDrawerController.animateForward] and [AppDrawerController.animateReverse]
 /// to open and close app drawer.
 class AppDrawerWrapper extends StatefulWidget {
   const AppDrawerWrapper({
@@ -21,7 +21,8 @@ class AppDrawerWrapper extends StatefulWidget {
   /// App drawer UI
   final Widget appDrawer;
 
-  final AppDrawerWrapperController controller;
+  /// ...
+  final AppDrawerController controller;
 
   @override
   _AppDrawerWrapperState createState() {
@@ -31,19 +32,16 @@ class AppDrawerWrapper extends StatefulWidget {
 
 class _AppDrawerWrapperState extends State<AppDrawerWrapper>
     with SingleTickerProviderStateMixin {
-  Duration duration = const Duration(milliseconds: 500);
   double screenWidth, screenHeight;
 
   @override
   void initState() {
     super.initState();
 
-    if (widget.controller.animationController == null) {
-      widget.controller.animationController = AnimationController(
-        vsync: this,
-        duration: duration,
-      );
-    }
+    widget.controller.animationController = AnimationController(
+      vsync: this,
+      duration: widget.controller.duration,
+    );
   }
 
   @override
@@ -52,7 +50,7 @@ class _AppDrawerWrapperState extends State<AppDrawerWrapper>
     screenHeight = size.height;
     screenWidth = size.width;
 
-    AppDrawerWrapperController wrapperController = widget.controller;
+    AppDrawerController wrapperController = widget.controller;
 
     return WillPopScope(
       onWillPop: () async {
@@ -69,11 +67,19 @@ class _AppDrawerWrapperState extends State<AppDrawerWrapper>
           children: [
             widget.appDrawer,
             AnimatedPositioned(
-              duration: duration,
-              left: wrapperController.isCollapsed ? 0 : 0.6 * screenWidth,
-              right: wrapperController.isCollapsed ? 0 : -0.6 * screenWidth,
-              top: wrapperController.isCollapsed ? 0 : screenHeight * 0.1,
-              bottom: wrapperController.isCollapsed ? 0 : screenHeight * 0.1,
+              duration: widget.controller.duration,
+              left: wrapperController.isCollapsed
+                  ? 0
+                  : widget.controller.collapsedWidth * screenWidth,
+              right: wrapperController.isCollapsed
+                  ? 0
+                  : -widget.controller.collapsedWidth * screenWidth,
+              top: wrapperController.isCollapsed
+                  ? 0
+                  : screenHeight * widget.controller.collapsedHeight,
+              bottom: wrapperController.isCollapsed
+                  ? 0
+                  : screenHeight * widget.controller.collapsedHeight,
               curve: Curves.fastOutSlowIn,
               child: InkWell(
                 onTap: () {
@@ -98,7 +104,7 @@ class _AppDrawerWrapperState extends State<AppDrawerWrapper>
                   ),
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
